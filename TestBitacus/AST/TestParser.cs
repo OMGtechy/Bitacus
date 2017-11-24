@@ -217,6 +217,28 @@ namespace TestBitacus.AST
                 // THEN: evaluating the expression yields 11
                 Assert.AreEqual(11, expression.Evaluate().Value);
             }
+
+            {
+                // GIVEN: the lexemes for 5 * 7 / (7 + 9) - 3
+                // WHEN: it is parsed
+                var expression = Parser.Parse(new List<Lexeme>
+                {
+                    new Lexeme { Number = 5 },
+                    new Lexeme { Operator = Operator.Asterisk },
+                    new Lexeme { Number = 7 },
+                    new Lexeme { Operator = Operator.Slash },
+                    new Lexeme { Kind = Lexeme.LexemeKind.LeftBracket },
+                    new Lexeme { Number = 7 },
+                    new Lexeme { Operator = Operator.Plus },
+                    new Lexeme { Number = 9 },
+                    new Lexeme { Kind = Lexeme.LexemeKind.RightBracket },
+                    new Lexeme { Operator = Operator.Minus },
+                    new Lexeme { Number = 3 }
+                });
+
+                // THEN: evaluating the expression yields -0.8125
+                Assert.AreEqual(-0.8125m, expression.Evaluate().Value);
+            }
         }
 
         [TestMethod]
@@ -233,6 +255,38 @@ namespace TestBitacus.AST
 
             // THEN: evaluating the expression yields 1
             Assert.AreEqual(1, expression.Evaluate().Value);
+        }
+
+        [TestMethod]
+        public void TestParseBrackets()
+        {
+            {
+                // GIVEN: the lexemes for (3)
+                // WHEN: it is parsed
+                var expression = Parser.Parse(new List<Lexeme>
+                {
+                    new Lexeme { Kind = Lexeme.LexemeKind.LeftBracket },
+                    new Lexeme { Number = 3 },
+                    new Lexeme { Kind = Lexeme.LexemeKind.RightBracket }
+                });
+
+                // THEN: evaluating the expression yields 3
+                Assert.AreEqual(3, expression.Evaluate().Value);
+            }
+
+            {
+                // GIVEN: the lexemes for ((42))
+                // WHEN: it is parsed
+                var expression = Parser.Parse(new List<Lexeme>
+                {
+                    new Lexeme { Kind = Lexeme.LexemeKind.LeftBracket },
+                    new Lexeme { Number = 42 },
+                    new Lexeme { Kind = Lexeme.LexemeKind.RightBracket }
+                });
+
+                // THEN: evaluating the expression yields 42
+                Assert.AreEqual(42, expression.Evaluate().Value);
+            }
         }
     }
 }

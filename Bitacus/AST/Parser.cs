@@ -67,6 +67,42 @@ namespace Bitacus.AST
                 return null;
             }
 
+            // handle brackets
+            for (int i = 0; i < toParse.Count;)
+            {
+                if (toParse[i].Kind == Lexeme.LexemeKind.LeftBracket)
+                {
+                    int unclosedCount = 1;
+                    for(int j = i + 1; j < toParse.Count; ++j)
+                    {
+                        switch(toParse[j].Kind)
+                        {
+                            case Lexeme.LexemeKind.LeftBracket: unclosedCount += 1; break;
+                            case Lexeme.LexemeKind.RightBracket: unclosedCount -= 1; break;
+                        }
+
+                        if(unclosedCount == 0)
+                        {
+                            var subList = toParse.GetRange(i + 1, j - i - 1);
+                            toParse.RemoveRange(i, 1 + j - i);
+
+                            var value = Parse(subList).Evaluate().Value;
+                            toParse.Insert(i, Lexer.Lex(value.ToString()).First());
+                            break;
+                        }
+                    }
+
+                    if(unclosedCount != 0)
+                    {
+                        return null;
+                    }
+                }
+                else
+                {
+                    ++i;
+                }
+            }
+
             var lexemes = Simplify(toParse);
 
             if (lexemes == null || lexemes.Count == 0)
@@ -98,6 +134,7 @@ namespace Bitacus.AST
                 valueExpression.Value = -valueExpression.Value;
             }
 
+            // handle other operators
             foreach (var opSet in orderOfOperations)
             {
                 Debug.Assert(expressions.Count == operators.Count + 1);

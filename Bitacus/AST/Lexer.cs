@@ -10,10 +10,12 @@ namespace Bitacus.AST
         public enum LexemeKind
         {
             Number,
-            Operator
+            Operator,
+            LeftBracket,
+            RightBracket
         };
 
-        public LexemeKind Kind { get; private set; }
+        public LexemeKind Kind { get; set; }
 
         private object value;
 
@@ -90,7 +92,25 @@ namespace Bitacus.AST
                 }
                 else
                 {
-                    return null;
+                    switch(toParse[0])
+                    {
+                        case '(':
+                            lexemes.Add(new Lexeme
+                            {
+                                Kind = Lexeme.LexemeKind.LeftBracket
+                            });
+                            break;
+                        case ')':
+                            lexemes.Add(new Lexeme
+                            {
+                                Kind = Lexeme.LexemeKind.RightBracket
+                            });
+                            break;
+                        default:
+                            return null;
+                    }
+
+                    toParse = toParse.Substring(1);
                 }
 
                 toParse = toParse.TrimStart();
